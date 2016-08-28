@@ -1,0 +1,13 @@
+.global g
+.extern imp
+.text.dat
+l1: mov r1, r0
+testgt r1, sp
+ldr r4, r9, 4, a
+c: .align 32
+.data
+mov r0, r1
+mov r1, r2
+a:add r0, imp
+.bss
+.end

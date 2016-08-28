@@ -1,0 +1,40 @@
+#SymbolTable
+Num	Ime		s		pom		vid
+0		UND		UND		0		global
+01		.text.dat	.text.dat	00		local
+02		.data	.data	00		local
+02		g	UND	FF		global
+03		.bss	.bss	00		local
+04		imp	UND	00		global
+05		l1	.text.dat	00		local
+06		c	.text.dat	0C		local
+07		a	.data	08		local
+
+
+#Memory::.text.dat[32]
+FE	08	00	00	
+59	0C	80	00	
+EA	22	44	01	
+00	00	00	00	
+00	00	00	00	
+00	00	00	00	
+00	00	00	00	
+00	00	00	00	
+#Relocation::.text.dat
+offset	type	num
+08	R_386_16	02
+08	R_386_16	02
+
+
+#Memory::.data[12]
+FE	00	40	00	
+FE	08	80	00	
+F1	04	00	00	
+#Relocation::.data
+offset	type	num
+08	R_386_24	04
+
+
+#Memory::.bss[0]
+#Relocation::.bss
+offset	type	num

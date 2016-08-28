@@ -1,0 +1,14 @@
+.global glob
+.extern e
+.data
+inlt r1, r14
+moveq r0, r1
+.text
+callne r4, 0xedfe
+shrgt r0, r4, e
+ldchge r2, 0xadbd
+andal r0, r1
+and r0, r1
+.bss
+.skip 6
+.end

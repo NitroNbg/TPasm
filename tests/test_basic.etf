@@ -1,0 +1,36 @@
+#SymbolTable
+Num	Ime		s		pom		vid
+0		UND		UND		0		global
+01		.text.swap	.text.swap	00		local
+02		.text.arit	.text.arit	00		local
+03		.bss	.bss	00		local
+
+
+#Memory::.text.swap[20]
+00	00	00	00	
+00	00	00	00	
+FE	78	80	00	
+FE	10	40	00	
+FE	0B	C0	00	
+#Relocation::.text.swap
+offset	type	num
+
+
+#Memory::.text.arit[40]
+FE	10	00	00	
+FE	08	00	00	
+F1	10	40	00	
+FE	18	80	00	
+F2	10	40	00	
+F3	18	60	00	
+F4	10	40	00	
+F5	08	20	00	
+F5	08	20	00	
+F5	10	40	00	
+#Relocation::.text.arit
+offset	type	num
+
+
+#Memory::.bss[0]
+#Relocation::.bss
+offset	type	num
