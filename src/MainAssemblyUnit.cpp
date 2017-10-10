@@ -34,28 +34,28 @@ void MainAssemblyUnit::processFile(std::string filename) {
 	this->setInput(filename);
 	if (this->input->good()) {
 		this->setOutput(filename.append(".etf"));
-		std::cout << "Program će započeti sa prevođenjem zadate datoteke " << filename << std::endl;
+		std::cout << "Starting to process file  " << filename << std::endl;
 		processFile();
 	}
 	else {
-		std::cout << "Nije moguće čitati iz datotek " << filename << ". Proverite da li ste pravilno uneli ime." << std::endl;
+		std::cout << "Unable to read file " << filename << ". Please check that is the correct path." << std::endl;
 	}
 	
 }
 
 void MainAssemblyUnit::processFile() {
-	std::cout << "Program će započeti sa prevođenjem zadate datoteke" << std::endl;
+	std::cout << "Starting to process the specified file" << std::endl;
 	try {
 		this->symtab = new SymbolTable();
 		this->parser = new DirectiveParser();
 		this->memory = new MemoryList();
 		this->relocationList = new RelocationList();
 		this->passOne();
-		std::cout << "Prvi prolaz je uspešno završen" << std::endl;
+		std::cout << "Pass one has been completed successfully" << std::endl;
 		this->passTwo();
-		std::cout << "Drugi prolaz je uspešno završen" << std::endl;
+		std::cout << "Pass two has been completed successfully" << std::endl;
 		this->printToOutput();
-		std::cout << "Upisivanje u datoteku je završeno" << std::endl;
+		std::cout << "Result successfully written to the output file" << std::endl;
 		processCompleted(true, "");
 	}
 	catch (AssemblyException* e) {
@@ -78,7 +78,7 @@ void MainAssemblyUnit::passOne() {
 			if (this->symtab->contains(label)) {
 				sym = this->symtab->get(label);
 				if (sym.getDefined()) {
-					throw new AssemblyException("Promenljiva [" + label + "] je prethodno već definisana");
+					throw new AssemblyException("Variable [" + label + "] has already been defined");
 				}
 				sym.setDefined(true);
 				sym.setSectionName(this->parser->getCurrentSection());
@@ -105,7 +105,7 @@ void MainAssemblyUnit::passOne() {
 			for (int i = 0; i < numberOfSymbols; i++) {
 				//Declare each symbol in SymbolTable
 				if (this->symtab->contains(operandValues[i])) {
-					throw new AssemblyException("Promenljiva [" + operandValues[i] + "] je prethodno već deklarisana");
+					throw new AssemblyException("Variable [" + operandValues[i] + "] has already been declared");
 				}
 				Symbol* s = new Symbol(operandValues[i]);
 				s->setVisibility(global);
@@ -120,7 +120,7 @@ void MainAssemblyUnit::passOne() {
 			for (int i = 0; i < numberOfSymbols; i++) {
 				//Declare each symbol in SymbolTable
 				if (this->symtab->contains(operandValues[i])) {
-					throw new AssemblyException("Promenljiva [" + operandValues[i] + "] je prethodno već deklarisana");
+					throw new AssemblyException("Variable [" + operandValues[i] + "] has already been declared");
 				}
 				Symbol* s = new Symbol(operandValues[i]);
 				s->setVisibility(global);
@@ -136,7 +136,7 @@ void MainAssemblyUnit::passOne() {
 				//It is a new section declaration
 				if (this->symtab->contains(extract)) {
 					if (this->symtab->get(extract).getDefined()) {
-						throw new AssemblyException("Više puta je definisana sekcija [" + extract + "]");
+						throw new AssemblyException("Section [" + extract + "] defined more than once");
 					}
 				}
 				Symbol section = Symbol(extract, extract);
@@ -158,14 +158,14 @@ void MainAssemblyUnit::passOne() {
 				std::vector<std::string> operandValues = this->parser->getOperandValues(operands);
 				int numberOfArguments = operandValues.size();
 				if (numberOfArguments == 0) {
-					throw new AssemblyException("Naredba [" + extract + "] se ne može pozvati bez barem jednog argumenta.");
+					throw new AssemblyException("Operation [" + extract + "] cannot be called without a single argument.");
 				}
 				if (directiveLength == 0) {
 					//It is a ".skip" or ".align" directive
 					if (extract == ".align") {
 						int alignWidth = std::stoi(operandValues[0], nullptr, 0);
 						if (alignWidth != 2 && alignWidth != 4 && alignWidth != 8 && alignWidth != 16 && alignWidth != 32 && alignWidth != 64 && alignWidth != 128) {
-							throw new AssemblyException("Naredba [" + extract + "] prihvata samo sledeće argumente: 2, 4, 8, 16, 32, 64, 128");
+							throw new AssemblyException("Operation [" + extract + "] accepts only the following arguments : 2, 4, 8, 16, 32, 64, 128");
 						}
 						if (this->parser->getCurrentSectionOffset() % alignWidth != 0) {
 							int appendValue = 0;
@@ -182,7 +182,7 @@ void MainAssemblyUnit::passOne() {
 					else if (extract == ".skip") {
 						int count = std::stoi(operandValues[0], nullptr, 0);
 						if (count < 0) {
-							throw new AssemblyException("Naredba [" + extract + "] prima samo cele brojeve veće od nule");
+							throw new AssemblyException("Operation [" + extract + "] accepts only positive integers as its arguments");
 						}
 						int appendValue = 0;
 						if (operandValues.size() > 1) {
@@ -212,7 +212,7 @@ void MainAssemblyUnit::passOne() {
 							//It is a literal value
 							unsigned long value = std::stoul(operandValues[i], nullptr, 0);
 							if (value >= std::pow(256, varSize)) {
-								throw new AssemblyException("Vrednost [" + std::to_string(value) + "] ne može da stane u " + std::to_string(varSize) + " bajta.");
+								throw new AssemblyException("Value [" + std::to_string(value) + "] cannot be stored inside " + std::to_string(varSize) + " bytes.");
 							}
 							unsigned int mem = value & 0xffffffff;
 							currentMemoryUnit->setWithFixedSize(mem, varSize);
@@ -251,13 +251,13 @@ void MainAssemblyUnit::passOne() {
 				std::string operands = this->parser->getOperands(line);
 				std::vector<std::string> operandValues = this->parser->getOperandValues(operands);
 				if (operandValues.size() != 2) {
-					throw new AssemblyException("Pseudo naredba [ldc] prihvata samo dva argumenta.");
+					throw new AssemblyException("Pseudo directive [ldc] accepts only two arguments.");
 				}
 				if (!this->parser->isRegister(operandValues[0])) {
-					throw new AssemblyException("Prvi argument pseudo naredbe [ldc] mora biti CPU registar.");
+					throw new AssemblyException("First argument of the pseudo directive [ldc] must be a CPU register.");
 				}
 				if (!this->parser->isNumber(operandValues[1])) {
-					throw new AssemblyException("Drugi argument pseudo naredbe [ldc] mora biti ceo broj, u decimalnom ili heksadecimalnom zapisu.");
+					throw new AssemblyException("Second argument of the pseudo directive [ldc] has to be an integer - either a decimal or hexadecimal value.");
 				}
 				int reg = this->parser->getRegisterNumber(operandValues[0]);
 				int argument = std::stoi(operandValues[1], nullptr, 0);
@@ -280,12 +280,12 @@ void MainAssemblyUnit::passOne() {
 				if (instructionBytes == 0) {
 					//"int" instruction format: src:4, nu:20 
 					if (operandValues.size() != 1) {
-						throw new AssemblyException("Naredba [int] prihvata samo jedan argument.");
+						throw new AssemblyException("Operation [int] accepts just one argument.");
 					}
 					if (this->parser->isNumber(operandValues[0])) {
 						int arg = std::stoi(operandValues[0], nullptr, 0);
 						if (arg > 15) {
-							throw new AssemblyException("Računar sadrži 16 ulaza u IVT-u. Ne sme se pozvati prekidna rutina na ulazu " + operandValues[0]);
+							throw new AssemblyException("Computer contains 16 IVT entries. Calling the ISR with IVT entry parameter " + operandValues[0] + " is forbidden");
 						}
 						opcode |= arg << 20;
 					}
@@ -306,7 +306,7 @@ void MainAssemblyUnit::passOne() {
 						/*else if (this->symtab->get(operandValues[0]).getDefined()) {
 							int arg = this->symtab->get(operandValues[0]).getOffset();
 							if (arg > 15) {
-								throw new AssemblyException("Računar sadrži 16 ulaza u IVT-u. Ne sme se pozvati prekidna rutina na ulazu " + operandValues[0]);
+								throw new AssemblyException("Computer contains 16 IVT entries. Calling the ISR with IVT entry parameter " + operandValues[0] + " is forbidden");
 							}
 							opcode |= arg << 20;
 						}
@@ -319,10 +319,10 @@ void MainAssemblyUnit::passOne() {
 				else if (instructionBytes > 0 && instructionBytes < 6) {
 					//"add", "sub", "mul", "div" and "cmp" instructions format: dst:5, 0:1, src:5*1, nu:13; dst:5, 1:1, imm(18)
 					if (operandValues.size() != 2) {
-						throw new AssemblyException("Naredba [" + instruction + "] prihvata samo dva argumenta.");
+						throw new AssemblyException("Operation [" + instruction + "] accepts only two arguments.");
 					}
 					if (!this->parser->isRegister(operandValues[0])) {
-						throw new AssemblyException("Prvi argument naredbe [" + instruction + "] mora biti CPU registar.");
+						throw new AssemblyException("First argument of the operation [" + instruction + "] must be a CPU register.");
 					}
 					int reg = this->parser->getRegisterNumber(operandValues[0]);
 					opcode |= (reg & 31) << 19;
@@ -331,7 +331,7 @@ void MainAssemblyUnit::passOne() {
 						opcode |= 1 << 18;
 						int immedValue = std::stoi(operandValues[1], nullptr, 0);
 						if (immedValue > 262143) {
-							throw new AssemblyException("Najveća vrednost za immed argument u naredbi [" + instruction + "] je 262143 (2 ^ 18 - 1) .");
+							throw new AssemblyException("The biggest value for an immediate argument for the operation [" + instruction + "] is 262143 (2 ^ 18 - 1) .");
 						}
 						opcode |= (immedValue & 262143);
 					}
@@ -359,7 +359,7 @@ void MainAssemblyUnit::passOne() {
 						/*else if (this->symtab->get(operandValues[1]).getDefined()) {
 							int immedValue = this->symtab->get(operandValues[1]).getOffset();
 							if (immedValue > 262143) {
-								throw new AssemblyException("Najveća vrednost za immed argument u naredbi [" + instruction + "] je 262143 (2 ^ 18 - 1) .");
+								throw new AssemblyException("The biggest value for an immediate argument for the operation [" + instruction + "] is 262143 (2 ^ 18 - 1) .");
 							}
 							opcode |= (immedValue & 262143);
 						}
@@ -372,15 +372,15 @@ void MainAssemblyUnit::passOne() {
 				else if (instructionBytes >= 6 && instructionBytes < 10) {
 					//"and", "or", "not", "test" instructions format: dst:5, src:5, nu:14
 					if (operandValues.size() != 2) {
-						throw new AssemblyException("Naredba [" + instruction + "] prihvata samo dva argumenta.");
+						throw new AssemblyException("Operation [" + instruction + "] accepts only two arguments.");
 					}
 					if (!this->parser->isRegister(operandValues[0]) || !this->parser->isRegister(operandValues[1])) {
-						throw new AssemblyException("Oba argumenta naredbe [" + instruction + "] moraju biti CPU registri.");
+						throw new AssemblyException("Both arguments of the operation [" + instruction + "] must be CPU registers.");
 					}
 					int dstReg = this->parser->getRegisterNumber(operandValues[0]);
 					int srcReg = this->parser->getRegisterNumber(operandValues[1]);
 					if (dstReg == Constants::REG_PC || dstReg == Constants::REG_LR || dstReg == Constants::REG_PSW || srcReg == Constants::REG_PC || srcReg == Constants::REG_LR || srcReg == Constants::REG_PSW) {
-						throw new AssemblyException("PC, LR i PSW registri nisu ispravni argumenti za naredbu [" + instruction + "] .");
+						throw new AssemblyException("PC, LR i PSW registers are invalid arguments for the operation [" + instruction + "] .");
 					}
 					opcode |= (dstReg & 31) << 19;
 					opcode |= (srcReg & 31) << 14;
@@ -392,33 +392,33 @@ void MainAssemblyUnit::passOne() {
 					int regFluct = 0;
 					int immedOffset = 0;
 					if (operandValues.size() != 2 && operandValues.size() != 4) {
-						throw new AssemblyException("Naredba [" + instruction + "] prihvata samo dva ili četiri argumenta.");
+						throw new AssemblyException("Operation [" + instruction + "] accepts only two or four arguments.");
 					}
 					if (!this->parser->isRegister(operandValues[0]) || !this->parser->isRegister(operandValues[1])) {
-						throw new AssemblyException("Argumenti u pozivu naredbe [" + instruction + "] sa dva argumenta moraju biti CPU registri.");
+						throw new AssemblyException("Arguments in the two-argument call of the operation [" + instruction + "] must be CPU registers.");
 					}
 					addrReg = this->parser->getRegisterNumber(operandValues[0]);
 					if (addrReg == Constants::REG_PSW) {
-						throw new AssemblyException("Registar PSW ne može biti adresni registar za naredbu [" + instruction + "] .");
+						throw new AssemblyException("Register PSW cannot be the addressing register for the operation [" + instruction + "] .");
 					}
 					destReg = this->parser->getRegisterNumber(operandValues[1]);
 					if (operandValues.size() == 4) {
 						if (this->parser->isNumber(operandValues[2])) {
 							regFluct = std::stoi(operandValues[2], nullptr, 0);
 							if (regFluct > 7) {
-								throw new AssemblyException("Argument f naredbe [" + instruction + "] mora imati celobrojnu vrednost od nula do sedam.");
+								throw new AssemblyException("Argument of the f operation [" + instruction + "] must have an integer value between 0 and 7.");
 							}
 							if (addrReg == Constants::REG_PC && regFluct != 0) {
-								throw new AssemblyException("Argument f naredbe [" + instruction + "] mora imati vrednost nula kada se PC koristi kao adresni registar");
+								throw new AssemblyException("Argument of the f operation [" + instruction + "] must be a zero if PC is used as addressing register.");
 							}
 						}
 						else {
-							throw new AssemblyException("Argument f naredbe [" + instruction + "] mora imati celobrojnu vrednost od nula do sedam.");
+							throw new AssemblyException("Argument of the f operation [" + instruction + "] must have an integer value between 0 and 7.");
 						}
 						if (this->parser->isNumber(operandValues[3])) {
 							immedOffset = std::stoi(operandValues[3], nullptr, 0);
 							if (immedOffset > 1023) {
-								throw new AssemblyException("Argument imm naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 1023] .");
+								throw new AssemblyException("Immeadite argument of the operation [" + instruction + "] must have an integer value in range [0, 1023] .");
 							}
 						}
 						else {
@@ -437,7 +437,7 @@ void MainAssemblyUnit::passOne() {
 							/*else if (this->symtab->get(operandValues[3]).getDefined()) {
 								immedOffset = this->symtab->get(operandValues[3]).getOffset();
 								if (immedOffset > 1023) {
-									throw new AssemblyException("Argument imm naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 1023] .");
+									throw new AssemblyException("Immeadite argument of the operation [" + instruction + "] must have an integer value in range [0, 1023] .");
 								}
 							}
 							else {*/
@@ -454,7 +454,7 @@ void MainAssemblyUnit::passOne() {
 				else if (instructionBytes == 12) {
 					//"call" instruction format: dst:5, imm:19
 					if (operandValues.size() <= 0 || operandValues.size() > 2) {
-						throw new AssemblyException("Naredba [" + instruction + "] prihvata samo jedan ili dva argumenta.");
+						throw new AssemblyException("Operation [" + instruction + "] accepts only one or two arguments.");
 					}
 					int dstReg = 0;
 					int immedValue = 0;
@@ -465,7 +465,7 @@ void MainAssemblyUnit::passOne() {
 						if (this->parser->isNumber(operandValues[1])) {
 							immedValue = std::stoi(operandValues[1], nullptr, 0);
 							if (immedValue > 524287) {
-								throw new AssemblyException("Argument immed naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 524287] .");
+								throw new AssemblyException("Immediate argument of the operation [" + instruction + "] must have an integer value in range [0, 524287] .");
 							}
 						}
 						else {
@@ -485,7 +485,7 @@ void MainAssemblyUnit::passOne() {
 							/*else if (this->symtab->get(operandValues[1]).getDefined()) {
 								immedValue = this->symtab->get(operandValues[1]).getOffset();
 								if (immedValue > 524287) {
-									throw new AssemblyException("Argument immed naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 524287] .");
+									throw new AssemblyException("Immediate argument of the operation [" + instruction + "] must have an integer value in range [0, 524287] .");
 								}
 							}
 							else {*/
@@ -500,17 +500,17 @@ void MainAssemblyUnit::passOne() {
 				else if (instructionBytes == 13) {
 					//"in", "out" instructions format: dst:4, src:4, i/o:1, nu:15
 					if (operandValues.size() != 2) {
-						throw new AssemblyException("Naredba [" + instruction + "] prihvata samo dva argumenta.");
+						throw new AssemblyException("Operation [" + instruction + "] accepts only two arguments.");
 					}
 					int dstReg = 0;
 					int srcReg = 0;
 					if (!this->parser->isRegister(operandValues[0]) || !this->parser->isRegister(operandValues[1])) {
-						throw new AssemblyException("Oba argumenta naredbe [" + instruction + "] moraju biti opštenamenski registi.");
+						throw new AssemblyException("Both arguments of the opertaion [" + instruction + "] must be general-purpose registers.");
 					}
 					dstReg = this->parser->getRegisterNumber(operandValues[0]);
 					srcReg = this->parser->getRegisterNumber(operandValues[1]);
 					if (dstReg > 15 || srcReg > 15) {
-						throw new AssemblyException("Oba argumenta naredbe [" + instruction + "] moraju biti opštenamenski registi.");
+						throw new AssemblyException("Both arguments of the opertaion [" + instruction + "] must be general-purpose registers.");
 					}
 					opcode |= (dstReg & 15) << 20;
 					opcode |= (srcReg & 15) << 16;
@@ -518,13 +518,13 @@ void MainAssemblyUnit::passOne() {
 				else if (instructionBytes == 14) {
 					//"mov", "shr", "shl" instructions format: dst:5, src:5, imm:5, l/r: 1, nu:8
 					if (operandValues.size() != 2 && operandValues.size() != 3) {
-						throw new AssemblyException("Naredba [" + instruction + "] prihvata samo dva ili tri argumenta.");
+						throw new AssemblyException("Operation [" + instruction + "] accepts only two or three arguments.");
 					}
 					int dstReg = 0;
 					int srcReg = 0;
 					int immedValue = 0;
 					if (!this->parser->isRegister(operandValues[0]) || !this->parser->isRegister(operandValues[1])) {
-						throw new AssemblyException("Oba argumenta naredbe [" + instruction + "] moraju biti CPU registri.");
+						throw new AssemblyException("Both arguments of the opertaion [" + instruction + "] must be CPU registers.");
 					}
 					dstReg = this->parser->getRegisterNumber(operandValues[0]);
 					srcReg = this->parser->getRegisterNumber(operandValues[1]);
@@ -532,7 +532,7 @@ void MainAssemblyUnit::passOne() {
 						if (this->parser->isNumber(operandValues[2])) {
 							immedValue = std::stoi(operandValues[2], nullptr, 0);
 							if (immedValue > 31) {
-								throw new AssemblyException("Argument immed naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 31] .");
+								throw new AssemblyException("Immeadite argument of the operation [" + instruction + "] must have an integer value in range [0, 31] .");
 							}
 						}
 						else {
@@ -552,7 +552,7 @@ void MainAssemblyUnit::passOne() {
 							/*else if (this->symtab->get(operandValues[2]).getDefined()) {
 								immedValue = this->symtab->get(operandValues[2]).getOffset();
 								if (immedValue > 31) {
-									throw new AssemblyException("Argument immed naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 31] .");
+									throw new AssemblyException("Immeadite argument of the operation [" + instruction + "] must have an integer value in range [0, 31] .");
 								}
 							}
 							else {*/
@@ -568,20 +568,20 @@ void MainAssemblyUnit::passOne() {
 				else if (instructionBytes == 15) {
 					//"ldch", "ldcl" instructions format: dst:4, h/l:1, nu:3, c:16
 					if (operandValues.size() != 2) {
-						throw new AssemblyException("Naredba [" + instruction + "] prihvata samo dva argumenta.");
+						throw new AssemblyException("Operation [" + instruction + "] accepts only two arguments.");
 					}
 					if (!this->parser->isRegister(operandValues[0])) {
-						throw new AssemblyException("Prvi argument naredbe [" + instruction + "] mora biti opštenamenski registar.");
+						throw new AssemblyException("First argument of the operation [" + instruction + "] must be a general-purpose register.");
 					}
 					int dstReg = this->parser->getRegisterNumber(operandValues[0]);
 					int c = 0;
 					if (dstReg > 15) {
-						throw new AssemblyException("Prvi argument naredbe [" + instruction + "] mora biti opštenamenski registar.");
+						throw new AssemblyException("First argument of the operation [" + instruction + "] must be a general-purpose register.");
 					}
 					if (this->parser->isNumber(operandValues[1])) {
 						c = std::stoi(operandValues[1], nullptr, 0);
 						if (c > 65535) {
-							throw new AssemblyException("Argument c naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 65535] .");
+							throw new AssemblyException("Argument of the c operation [" + instruction + "] must have an integer value in range [0, 65535] .");
 						}
 					}
 					else {
@@ -600,7 +600,7 @@ void MainAssemblyUnit::passOne() {
 						/*else if (this->symtab->get(operandValues[1]).getDefined()) {
 							c = this->symtab->get(operandValues[1]).getOffset();
 							if (c > 65535) {
-								throw new AssemblyException("Argument c naredbe [" + instruction + "] mora imati celobrojnu vrednost u opsegu [0, 65535] .");
+								throw new AssemblyException("Argument of the c operation [" + instruction + "] must have an integer value in range [0, 65535] .");
 							}
 						}
 						else {*/
@@ -616,7 +616,7 @@ void MainAssemblyUnit::passOne() {
 				//		//It is a literal value
 				//		int value = std::stoi(operandValues[i], nullptr, 0);
 				//		if (value >= std::pow(256, 4)) {
-				//			throw new AssemblyException("Vrednost [" + std::to_string(value) + "] ne može da stane u " + std::to_string(4) + " bajta.");
+				//			throw new AssemblyException("Value [" + std::to_string(value) + "] cannot be stored inside " + std::to_string(4) + " bytes.");
 				//		}
 
 				//	}
@@ -648,7 +648,7 @@ void MainAssemblyUnit::passOne() {
 			}
 		}
 		if (this->input->eof()) {
-			throw new AssemblyException("Ne postoji naredba .end");
+			throw new AssemblyException("No .end directive at the end of the file.");
 		}
 		line = readLine();
 		line = this->parser->trimLine(line);
@@ -703,11 +703,11 @@ void MainAssemblyUnit::passTwo() {
 
 void MainAssemblyUnit::processCompleted(bool success, std::string message) {
 	if (success) {
-		std::cout << "Zadatak je uspešno završen\n";
+		std::cout << "Task completed successfully\n";
 	}
 	else {
-		std::cout << "Došlo je do greške prilikom prevođenja ulaza\n";
-		std::cout << "Greška: " << message << std::endl;
+		std::cout << "Processing input file caused an error.\n";
+		std::cout << "Error: " << message << std::endl;
 	}
 }
 

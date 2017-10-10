@@ -26,7 +26,7 @@ std::string DirectiveParser::getLabelName(std::string line) {
 		return "";
 	}
 	if (line.find(" ") < line.find(":")) {
-		throw new AssemblyException("[" + line + "] : Nepravilno imenovana labela. Razmak nije dozvoljen u imenu.\n");
+		throw new AssemblyException("[" + line + "] : Invalid label name. No whitespaces are allowed.\n");
 	}
 	return line.substr(0, line.find(":"));
 }
@@ -41,7 +41,7 @@ std::string DirectiveParser::getInstruction(std::string line) {
 	}
 	int whitespacePos = instructionPart.find(" ");
 	if (whitespacePos == std::string::npos) {
-		throw new AssemblyException("[" + line + "] : Nepravilno napisana naredba. Nije zadat argument za naredbu.\n");
+		throw new AssemblyException("[" + line + "] : Invalid instruction declaration. No argument provided for the given instruction.\n");
 	}
 	return instructionPart.substr(0, whitespacePos);
 }
@@ -79,7 +79,7 @@ int DirectiveParser::getOpcode(std::string operation) {
 		opcode |= Constants::getMapper().at(instruction);
 		return opcode;
 	}
-	throw new AssemblyException("Ne postoji naredba [" + operation + "]");
+	throw new AssemblyException("Unsupported instruction [" + operation + "]");
 }
 
 std::string DirectiveParser::extractBeforeWhitespace(std::string line) {

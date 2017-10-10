@@ -30,7 +30,10 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	else {
-		std::cout << "Niste uneli putanju ka datoteci koju elite da prevedete" << std::endl;
+		std::cout << "You have to specify assembly file for processing." << std::endl;
+		std::cout << "Instruction format: |tpasm FILENAME|" << std::endl;
+		std::cout << "Batch mode instruction format: |tpasm -batch FILENAME1, FILENAME2, ...|" << std::endl;
+		std::cout << "The program will close...";
 	}
 	std::getchar();
 }

@@ -16,7 +16,7 @@ int Memory::size() {
 
 int Memory::get(int location) {
 	if (location < 0 || location >= size()) {
-		throw new AssemblyException("Nepripadajuća adresa " + std::to_string(location) + " je zatražena. Memorija prevedenog programa je veličine " + std::to_string(size()));
+		throw new AssemblyException("Unallocated or invalid address " + std::to_string(location) + " has been specified. Program memory size is " + std::to_string(size()) + " bytes.");
 	}
 	return this->bytes[location];
 }
@@ -31,7 +31,7 @@ void Memory::set(int value) {
 
 void Memory::set(int value, int location) {
 	if (location < 0 || location >= size()) {
-		throw new AssemblyException("Nepripadajuća adresa " + std::to_string(location) + " je zatražena. Memorija prevedenog programa je veličine " + std::to_string(size()));
+		throw new AssemblyException("Unallocated or invalid address " + std::to_string(location) + " has been specified. Program memory size is " + std::to_string(size()) + " bytes.");
 	}
 	this->bytes[location] = value;
 }
@@ -48,7 +48,7 @@ void Memory::setWithFixedSize(int value, int size) {
 
 void Memory::setWithFixedSize(int value, int location, int s) {
 	if (location < 0 || location >= this->size()) {
-		throw new AssemblyException("Nepripadajuća adresa " + std::to_string(location) + " je zatražena. Memorija prevedenog programa je veličine " + std::to_string(size()));
+		throw new AssemblyException("Unallocated or invalid address " + std::to_string(location) + " has been specified. Program memory size is " + std::to_string(size()) + " bytes.");
 	}
 	int memValue = value % 256;
 	for (int i = 0; i < s; i++) {
@@ -67,7 +67,7 @@ void Memory::setWithFixedSizeInstruction(int value, int size) {
 
 void Memory::setWithFixedSizeInstruction(int value, int location, int s) {
 	if (location < 0 || location >= this->size()) {
-		throw new AssemblyException("Nepripadajuća adresa " + std::to_string(location) + " je zatražena. Memorija prevedenog programa je veličine " + std::to_string(size()));
+		throw new AssemblyException("Unallocated or invalid address " + std::to_string(location) + " has been specified. Program memory size is " + std::to_string(size()) + " bytes.");
 	}
 	int memValue = value % 256;
 	for (int i = 0; i < s; i++) {
@@ -87,7 +87,7 @@ void Memory::set(unsigned int value) {
 
 void Memory::set(unsigned int value, int location) {
 	if (location < 0 || location >= size()) {
-		throw new AssemblyException("Nepripadajuća adresa " + std::to_string(location) + " je zatražena. Memorija prevedenog programa je veličine " + std::to_string(size()));
+		throw new AssemblyException("Unallocated or invalid address " + std::to_string(location) + " has been specified. Program memory size is " + std::to_string(size()) + " bytes.");
 	}
 	this->bytes[location] = value;
 }
@@ -104,7 +104,7 @@ void Memory::setWithFixedSize(unsigned int value, int size) {
 
 void Memory::setWithFixedSize(unsigned int value, int location, int s) {
 	if (location < 0 || location >= this->size()) {
-		throw new AssemblyException("Nepripadajuća adresa " + std::to_string(location) + " je zatražena. Memorija prevedenog programa je veličine " + std::to_string(size()));
+		throw new AssemblyException("Unallocated or invalid address " + std::to_string(location) + " has been specified. Program memory size is " + std::to_string(size()) + " bytes.");
 	}
 	int memValue = value % 256;
 	for (int i = 0; i < s; i++) {
@@ -123,7 +123,7 @@ void Memory::setWithFixedSizeInstruction(unsigned int value, int size) {
 
 void Memory::setWithFixedSizeInstruction(unsigned int value, int location, int s) {
 	if (location < 0 || location >= this->size()) {
-		throw new AssemblyException("Nepripadajuća adresa " + std::to_string(location) + " je zatražena. Memorija prevedenog programa je veličine " + std::to_string(size()));
+		throw new AssemblyException("Unallocated or invalid address " + std::to_string(location) + " has been specified. Program memory size is " + std::to_string(size()) + " bytes.");
 	}
 	int memValue = value % 256;
 	for (int i = 0; i < s; i++) {
